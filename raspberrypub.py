@@ -8,6 +8,56 @@ import numpy as np
 import math
 import paho.mqtt.client as mqtt
 import os
+import datetime
+import sqlite3
+
+def employeelog(id, name, intime, outtime, G1, G2, G3):
+    
+        sqliteConnection = sqlite3.connect('test.db')
+        cursor = sqliteConnection.cursor()
+        print("Connected to SQLite")
+
+        sqlite_create_table_query = '''CREATE TABLE mytab1 (
+                                       id INTEGER PRIMARY KEY,
+                                       name TEXT NOT NULL,
+                                       intime timestamp,
+                                       outtime timestamp,
+                                       G1 BOOL NOT NULL,
+                                       G2 BOOL NOT NULL,
+                                       G3 BOOL NOT NULL);'''
+        sqliteConnection = sqlite3.connect('test.db')
+        cursor = sqliteConnection.cursor()
+        cursor.execute(sqlite_create_table_query)
+
+        # insert developer detail
+        sqlite_insert_with_param = """INSERT INTO 'mytab1'
+                          ('id', 'name', 'intime', 'outtime','G1', 'G2', 'G3') 
+                          VALUES (?, ?, ?, ?, ?, ?, ?);"""
+
+        data_tuple = (id, name, intime, outtime,G1, G2, G3)
+        cursor.execute(sqlite_insert_with_param, data_tuple)
+        sqliteConnection.commit()
+        print("Developer added successfully \n")
+
+        # get developer detail
+        sqlite_select_query = """SELECT name, intime, outtime, G1, G2, G3 from mytab1 where id = ?"""
+        cursor.execute(sqlite_select_query, (1,))
+        records = cursor.fetchall()
+
+        for row in records:
+            developer = row[0]
+            joining_Date = row[1]
+            print(developer, " joined on", intime)
+            print("joining date type is", type(joining_Date))
+
+        cursor.close()
+
+   
+        if sqliteConnection:
+            sqliteConnection.close()
+            print("sqlite connection is closed")
+
+employeelog(1, 'Mark', datetime.datetime.now(),datetime.datetime.now(),1,1,1)
 
 ledpin = 12
 IO.setwarnings(False)
